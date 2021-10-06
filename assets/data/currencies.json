@@ -1,0 +1,72 @@
+{
+    "currencies": [
+      {
+        "name": "EUR",
+        "rates": [
+          {
+            "name": "dollar",
+            "value": 1.159373
+          },
+          {
+            "name": "real",
+            "value": 6.349658
+          },
+          {
+            "name": "pound",
+            "value": 0.851194
+          }
+        ]
+      },
+      {
+        "name": "USD",
+        "rates": [
+          {
+            "name": "euro",
+            "value": 0.862535180653681
+          },
+          {
+            "name": "real",
+            "value": 5.47680341011909
+          },
+          {
+            "name": "pound",
+            "value": 0.7341847705613292
+          }
+        ]
+      },
+      {
+        "name": "BRL",
+        "rates": [
+          {
+            "name": "euro",
+            "value": 0.15748879703442295
+          },
+          {
+            "name": "dollar",
+            "value": 0.18258825908419005
+          },
+          {
+            "name": "pound",
+            "value": 0.13405351910291863
+          }
+        ]
+      },
+      {
+        "name": "GBP",
+        "rates": [
+          {
+            "name": "euro",
+            "value": 1.1748203112333968
+          },
+          {
+            "name": "real",
+            "value": 7.459707187785628
+          },
+          {
+            "name": "dollar",
+            "value": 1.362054948695597
+          }
+        ]
+      }
+    ]
+}
