@@ -1,6 +1,7 @@
 import 'package:currency_converter/app/components/currencyForm_component.dart';
 import 'package:currency_converter/app/controllers/app_controller.dart';
 import 'package:currency_converter/app/controllers/home_controller.dart';
+import 'package:currency_converter/app/models/currency_model.dart';
 import 'package:flutter/material.dart';
 
 class HomeView extends StatefulWidget {
@@ -16,19 +17,25 @@ class _HomeViewState extends State<HomeView> {
   
   late HomeController homeController;
 
+  late List<CurrencyModel> currencies = [];
+
+  late Future<List<CurrencyModel>> future;
+
   @override
   void initState(){
-    super.initState();
+    future = HomeController.update();
     homeController = HomeController(toText: toText, fromText: fromText);
+    super.initState();
   }
  
   Widget _body(){
     return SingleChildScrollView(
       child: FutureBuilder(
-        future: HomeController.update(),
+        initialData: homeController.currencies,
+        future: future,
         builder: (BuildContext context, AsyncSnapshot snapshot){
         if(snapshot.hasData){
-          homeController.currencies = snapshot.data;
+          currencies = snapshot.data;
           return SizedBox(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
@@ -52,6 +59,7 @@ class _HomeViewState extends State<HomeView> {
                     controller: homeController.fromText,
                     onChanged: (model){
                         setState((){
+                          print(model.name);
                           homeController.fromCurrency = model;
                       });
                     },
@@ -63,6 +71,7 @@ class _HomeViewState extends State<HomeView> {
                     controller: homeController.toText,
                     onChanged: (model){
                         setState((){
+                          print(model.name);
                           homeController.toCurrency = model;
                         });
                     },
@@ -83,58 +92,7 @@ class _HomeViewState extends State<HomeView> {
             )
           );
         }else{
-          return SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top:30, left: 8, right: 8, bottom: 50),
-                    child: Image.asset(
-                              'assets/images/logo.png',
-                              width: 150,
-                              height: 150
-                          ),
-                  ),
-                  CurrencyForm(
-                    label: "From",
-                    items:  homeController.currencies,
-                    controller: homeController.fromText,
-                    onChanged: (model){
-                      setState((){
-                        homeController.toCurrency = model;
-                      });
-                    },
-                    selectedItem: homeController.fromCurrency,
-                  ),
-                  CurrencyForm(
-                    label: "To",
-                    items: homeController.currencies,
-                    controller: homeController.toText,
-                    onChanged: (model){
-                      setState((){
-                        homeController.toCurrency = model;
-                      });
-                    },
-                    selectedItem: homeController.toCurrency,
-                  ),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top:20),
-                      child: ElevatedButton(
-                        onPressed: (){
-                          homeController.convert();
-                          },
-                        child: Text('Convert')
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          );
+          return Padding(padding: const EdgeInsets.all(175),child:CircularProgressIndicator());
         }
       }),
     );
@@ -191,6 +149,9 @@ class _HomeViewState extends State<HomeView> {
             child: IconButton(
               onPressed: (){
                 setState((){
+                  homeController.currencies = currencies;
+                  homeController.toCurrency = currencies[0];
+                  homeController.fromCurrency = currencies[1];
                 });
               },
               icon: Icon(
