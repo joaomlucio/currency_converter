@@ -7,11 +7,11 @@ import 'package:currency_converter/app/models/currency_model.dart';
 class CurrencyForm extends StatelessWidget {
   
 
-  final TextEditingController controller;
-  final String label;
-  final CurrencyModel selectedItem;
-  final List<CurrencyModel> items;
-  final void Function(dynamic) onChanged;
+  TextEditingController controller;
+  String label;
+  CurrencyModel selectedItem;
+  List<CurrencyModel> items;
+  void Function(dynamic) onChanged;
   
 
 
@@ -60,11 +60,18 @@ class CurrencyForm extends StatelessWidget {
           flex: 1,
           child: Padding(
             padding: const EdgeInsets.only(left: 10, right: 10, bottom:10, top: 35),
-            child: DropdownButton<CurrencyModel>(
+            child: DropdownButton<CurrencyModel>(  
               isExpanded: true,
               value: selectedItem,
               underline:Container(height: 1, color: Colors.blue),
-              items: items.map<DropdownMenuItem<CurrencyModel>>((item)=>DropdownMenuItem<CurrencyModel>(value: item, child: Text(Currencies.getValue(item.name)))).toList(),
+              items: items.map<DropdownMenuItem<CurrencyModel>>(
+                (CurrencyModel item) => DropdownMenuItem<CurrencyModel>(
+                  value: item,
+                  child: Text(
+                    Currencies.getValue(item.name)
+                  )
+                )
+              ).toList(),
               onChanged: onChanged,
             ),
           ),
