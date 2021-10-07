@@ -13,8 +13,6 @@ class HomeController{
   final TextEditingController fromText;
   final TextEditingController toText;
 
-
-
   HomeController({required this.fromText, required this.toText}) {
     List<Map<String, dynamic>> data = [
       {
@@ -58,19 +56,20 @@ class HomeController{
           {"name": "real",
           "value": 7.459707187785628},
           {"name": "dollar",
-          "value": 1.362054948695597}
+          "value": 1.362054948695597},
         ]
       }
     ];
-    var data2 = data.map((value)=>CurrencyModel.fromMap(value));
-    currencies = data2.toList();
+
+    currencies = AppController.instance.loaded ? AppController.instance.currencies : data.map((value)=>CurrencyModel.fromMap(value)).toList();
     fromCurrency = currencies[0];
     toCurrency = currencies[1];
   }
 
   convert(){
-    double value = double.tryParse(toText.text.replaceAll(',', '.')) ?? 1.0;
-    double exchange = fromCurrency.rates!.firstWhere((value) => value['name']==Currencies.getValue(toCurrency.name).toLowerCase())['value'];
+    double value = double.tryParse(fromText.text.replaceAll(',', '.')) ?? 1.0;
+    var test = fromCurrency.rates.where((value) => value['name']==(Currencies.getValue(toCurrency.name).toLowerCase())).toList();
+    double exchange = test.isEmpty ? 1.0 : double.parse(test.first['value'].toString());
     double result = value*exchange;
     toText.text = result.toStringAsFixed(2);
   }
@@ -101,25 +100,22 @@ class HomeController{
 
     final QueryResult result = await client.query(options);
 
-    List<CurrencyModel> curs = [];
+    List<CurrencyModel> curs;
 
     if(!result.hasException){
       
       final List<dynamic> data = result.data?['currencies'] as List<dynamic>;
       
-      data.forEach((value){
-        curs.add(CurrencyModel.fromMap(value));
-      });
+      curs = data.map((value)=>CurrencyModel.fromMap(value)).toList();
 
       await AppController.instance.storage.setItem("currencies", curs);
-      print("chegou aqui, mate");
+
+      await AppController.instance.storage.setItem("cached", true);
+
       return curs; 
 
     }else{ 
-
-      curs = AppController.instance.storage.getItem("currencies").forEach((value){
-        curs.add(CurrencyModel.fromMap(value));
-      });
+      curs = AppController.instance.storage.getItem("currencies").map((value)=>CurrencyModel.fromMap(value)).toList();
 
       return curs;
 
