@@ -2,10 +2,10 @@ import 'dart:convert';
 
 class CurrencyModel {
 
-  final String? name;
-  final List<Map<String, dynamic>>? rates;
+  final String name;
+  final List<Map<String, dynamic>> rates;
 
-  CurrencyModel({this.name, this.rates});
+  CurrencyModel({required this.name, required this.rates});
 
   Map<String, dynamic> toMap() {
     return {
