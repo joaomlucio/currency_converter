@@ -19,11 +19,14 @@ class _HomeViewState extends State<HomeView> {
 
   late List<CurrencyModel> currencies = [];
 
-  late Future<List<CurrencyModel>> future;
+  late Future<List<CurrencyModel>> update;
+
+  late Future<bool> theme;
 
   @override
   void initState(){
-    future = HomeController.update();
+    update = HomeController.update();
+    theme = AppController.instance.saveTheme();
     homeController = HomeController(toText: toText, fromText: fromText);
     super.initState();
   }
@@ -32,7 +35,7 @@ class _HomeViewState extends State<HomeView> {
     return SingleChildScrollView(
       child: FutureBuilder(
         initialData: homeController.currencies,
-        future: future,
+        future: update,
         builder: (BuildContext context, AsyncSnapshot snapshot){
         if(snapshot.hasData){
           currencies = snapshot.data;
@@ -59,7 +62,6 @@ class _HomeViewState extends State<HomeView> {
                     controller: homeController.fromText,
                     onChanged: (model){
                         setState((){
-                          print(model.name);
                           homeController.fromCurrency = model;
                       });
                     },
@@ -71,7 +73,6 @@ class _HomeViewState extends State<HomeView> {
                     controller: homeController.toText,
                     onChanged: (model){
                         setState((){
-                          print(model.name);
                           homeController.toCurrency = model;
                         });
                     },
@@ -92,11 +93,18 @@ class _HomeViewState extends State<HomeView> {
             )
           );
         }else{
-          return Padding(padding: const EdgeInsets.all(175),child:CircularProgressIndicator());
+          return Center(
+              child: Container(
+                width: 26,
+                height: 26,
+                child: CircularProgressIndicator()
+              )
+          );
         }
       }),
     );
   }
+  
   
   @override
   Widget build(BuildContext context) {
@@ -104,14 +112,14 @@ class _HomeViewState extends State<HomeView> {
       drawer: Drawer(
         child: Column(
           children: [
-            UserAccountsDrawerHeader(
+            /*UserAccountsDrawerHeader(
               accountName: null,
               accountEmail: null,
               currentAccountPicture: ClipRRect(
                 borderRadius: BorderRadius.circular(40.0),
                 child: Image.network('')
               ),
-            ),
+            ),*/
             ListTile(
               leading: Icon(Icons.home),
               title: Text('Home'),
@@ -131,18 +139,39 @@ class _HomeViewState extends State<HomeView> {
       ),
       appBar: AppBar(
         actions: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: IconButton(
-              onPressed: (){
-                AppController.instance.toggleDarkTheme();
-              },
-              icon: Icon(
-                Icons.dark_mode,
-                size: 26.0,
-              ),
-              tooltip: 'Toggle Dark Theme',
-            ),
+          FutureBuilder(
+            initialData: AppController.instance.darkTheme,
+            future: theme,
+            builder: (context, AsyncSnapshot snapshot) {
+              if(snapshot.hasData){
+                return Padding(
+                  padding: EdgeInsets.only(right: 20.0),
+                  child: IconButton(
+                    onPressed: (){
+                      AppController.instance.toggleDarkTheme();
+                    },
+                    icon: Icon(
+                      Icons.dark_mode,
+                      size: 26.0,
+                    ),
+                    tooltip: 'Toggle Dark Theme',
+                  ),
+                );
+              }else if (snapshot.hasError){
+                return Container(child:Text(snapshot.error.toString()));
+              }else{
+                return Padding(
+                  padding: EdgeInsets.all(100),
+                  child: Center(
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator()
+                    )
+                  )
+                );
+              }
+            }
           ),
           Padding(
             padding: EdgeInsets.only(right: 20.0),

@@ -103,22 +103,17 @@ class HomeController{
     List<CurrencyModel> curs;
 
     if(!result.hasException){
-      
       final List<dynamic> data = result.data?['currencies'] as List<dynamic>;
       
       curs = data.map((value)=>CurrencyModel.fromMap(value)).toList();
 
       await AppController.instance.storage.setItem("currencies", curs);
-
       await AppController.instance.storage.setItem("cached", true);
 
       return curs; 
-
     }else{ 
       curs = AppController.instance.storage.getItem("currencies").map((value)=>CurrencyModel.fromMap(value)).toList();
-
       return curs;
-
     }
   }
 }
