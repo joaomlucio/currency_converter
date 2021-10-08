@@ -9,14 +9,20 @@ class AppController extends ChangeNotifier{
   LocalStorage storage = new LocalStorage('data');
 
   late bool cached;
-  late bool loaded = false;
+  bool loaded = false;
 
-  List<CurrencyModel> currencies = [];
+  late List<CurrencyModel> currencies=[];
 
   bool darkTheme = false;
 
+  Future<bool> saveTheme() async{
+    await AppController.instance.storage.setItem('dark', darkTheme);
+    return darkTheme;
+  }
+
   toggleDarkTheme(){
     darkTheme = !darkTheme;
+    print(darkTheme);
     notifyListeners();
   }
 

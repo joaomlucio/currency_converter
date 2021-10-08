@@ -16,11 +16,11 @@ class CurrencyConverter extends StatelessWidget{
           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if(snapshot.hasData){
             var cached = AppController.instance.storage.getItem("cached");
-            //var dark = AppController.instance.storage.getItem("dark");
+            var dark = AppController.instance.storage.getItem("dark");
             AppController.instance.cached = cached != null ? cached : false;
-            //if(dark!=null) AppController.instance.darkTheme = dark;
+            AppController.instance.darkTheme = dark != null ? dark : AppController.instance.darkTheme;
             if(AppController.instance.cached && AppController.instance.loaded==false){
-              AppController.instance.storage.getItem('currencies').map((item)=>CurrencyModel.fromJson(item)).toList().forEach((item)=>AppController.instance.currencies.add(item));
+              AppController.instance.storage.getItem('currencies').forEach((value)=>AppController.instance.currencies.add(CurrencyModel.fromJson(value)));
               AppController.instance.loaded = true;
             }
             return MaterialApp(
@@ -31,7 +31,7 @@ class CurrencyConverter extends StatelessWidget{
                 brightness: AppController.instance.darkTheme 
                              ? Brightness.dark 
                              : Brightness.light,
-                accentColor: Colors.blueAccent,
+                //accentColor: Colors.blueAccent,
               ),
               initialRoute: '/home',
               routes: {
@@ -43,9 +43,14 @@ class CurrencyConverter extends StatelessWidget{
             AppController.instance.cached = false;
             return Center(
               child: Container(
-                width: 26,
-                height: 26,
-                child: CircularProgressIndicator()
+                width: 100,
+                height:100,
+                child: CircularProgressIndicator(
+                  color: Colors.blue,
+                  backgroundColor: AppController.instance.darkTheme
+                    ? Colors.black 
+                    : Colors.white,
+                  )
               )
             );
           }
