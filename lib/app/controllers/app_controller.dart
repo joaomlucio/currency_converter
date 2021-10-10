@@ -13,17 +13,4 @@ class AppController extends ChangeNotifier{
 
   late List<CurrencyModel> currencies=[];
 
-  bool darkTheme = false;
-
-  Future<bool> saveTheme() async{
-    await AppController.instance.storage.setItem('dark', darkTheme);
-    return darkTheme;
-  }
-
-  toggleDarkTheme(){
-    darkTheme = !darkTheme;
-    print(darkTheme);
-    notifyListeners();
-  }
-
 }
