@@ -100,7 +100,7 @@ class HomeController{
 
     final QueryResult result = await client.query(options);
 
-    List<CurrencyModel> curs;
+    List<CurrencyModel> curs = [];
 
     if(!result.hasException){
       final List<dynamic> data = result.data?['currencies'] as List<dynamic>;
@@ -111,8 +111,11 @@ class HomeController{
       await AppController.instance.storage.setItem("cached", true);
 
       return curs; 
-    }else{ 
-      curs = AppController.instance.storage.getItem("currencies").map((value)=>CurrencyModel.fromMap(value)).toList();
+    }else{
+      var data = AppController.instance.storage.getItem("currencies");
+      if(data!=null){
+        data.forEach((value)=>curs.add(CurrencyModel.fromJson(value)));
+      }
       return curs;
     }
   }

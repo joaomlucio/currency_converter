@@ -1,5 +1,4 @@
 import 'package:currency_converter/app/components/currencyForm_component.dart';
-import 'package:currency_converter/app/controllers/app_controller.dart';
 import 'package:currency_converter/app/controllers/home_controller.dart';
 import 'package:currency_converter/app/models/currency_model.dart';
 import 'package:flutter/material.dart';
@@ -21,12 +20,10 @@ class _HomeViewState extends State<HomeView> {
 
   late Future<List<CurrencyModel>> update;
 
-  late Future<bool> theme;
 
   @override
   void initState(){
     update = HomeController.update();
-    theme = AppController.instance.saveTheme();
     homeController = HomeController(toText: toText, fromText: fromText);
     super.initState();
   }
@@ -37,7 +34,7 @@ class _HomeViewState extends State<HomeView> {
         initialData: homeController.currencies,
         future: update,
         builder: (BuildContext context, AsyncSnapshot snapshot){
-        if(snapshot.hasData){
+        if(snapshot.connectionState==ConnectionState.done){
           currencies = snapshot.data;
           return SizedBox(
             width: MediaQuery.of(context).size.width,
@@ -61,8 +58,8 @@ class _HomeViewState extends State<HomeView> {
                     selectedItem: homeController.fromCurrency,
                     controller: homeController.fromText,
                     onChanged: (model){
-                        setState((){
-                          homeController.fromCurrency = model;
+                      setState((){
+                        homeController.fromCurrency = model;
                       });
                     },
                   ),
@@ -72,9 +69,9 @@ class _HomeViewState extends State<HomeView> {
                     items: homeController.currencies,
                     controller: homeController.toText,
                     onChanged: (model){
-                        setState((){
-                          homeController.toCurrency = model;
-                        });
+                      setState((){
+                        homeController.toCurrency = model;
+                      });
                     },
                   ),
                   Center(
@@ -94,10 +91,13 @@ class _HomeViewState extends State<HomeView> {
           );
         }else{
           return Center(
-              child: Container(
-                width: 26,
-                height: 26,
-                child: CircularProgressIndicator()
+              child: Padding(
+                padding: const EdgeInsets.all(50),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator()
+                ),
               )
           );
         }
@@ -109,78 +109,18 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(
-        child: Column(
-          children: [
-            /*UserAccountsDrawerHeader(
-              accountName: null,
-              accountEmail: null,
-              currentAccountPicture: ClipRRect(
-                borderRadius: BorderRadius.circular(40.0),
-                child: Image.network('')
-              ),
-            ),*/
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
-              onTap: (){
-                Navigator.of(context).pushReplacementNamed('/home');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('LogOut'),
-              onTap: (){
-                Navigator.of(context).pushReplacementNamed('/');
-              },
-            )
-          ],
-        )
-      ),
       appBar: AppBar(
         actions: <Widget>[
-          FutureBuilder(
-            initialData: AppController.instance.darkTheme,
-            future: theme,
-            builder: (context, AsyncSnapshot snapshot) {
-              if(snapshot.hasData){
-                return Padding(
-                  padding: EdgeInsets.only(right: 20.0),
-                  child: IconButton(
-                    onPressed: (){
-                      AppController.instance.toggleDarkTheme();
-                    },
-                    icon: Icon(
-                      Icons.dark_mode,
-                      size: 26.0,
-                    ),
-                    tooltip: 'Toggle Dark Theme',
-                  ),
-                );
-              }else if (snapshot.hasError){
-                return Container(child:Text(snapshot.error.toString()));
-              }else{
-                return Padding(
-                  padding: EdgeInsets.all(100),
-                  child: Center(
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator()
-                    )
-                  )
-                );
-              }
-            }
-          ),
           Padding(
             padding: EdgeInsets.only(right: 20.0),
             child: IconButton(
               onPressed: (){
                 setState((){
-                  homeController.currencies = currencies;
-                  homeController.toCurrency = currencies[0];
-                  homeController.fromCurrency = currencies[1];
+                  if(currencies.isNotEmpty){
+                    homeController.currencies = currencies;
+                    homeController.toCurrency = currencies[0];
+                    homeController.fromCurrency = currencies[1];
+                  }
                 });
               },
               icon: Icon(
