@@ -1,69 +1,29 @@
+import 'dart:convert';
+import 'package:currency_converter/app/enums/homeState_enum.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:currency_converter/app/controllers/app_controller.dart';
 import 'package:currency_converter/app/enums/currency_enum.dart';
-import 'package:flutter/widgets.dart';
-import 'package:graphql/client.dart';
+import 'package:currency_converter/app/repositories/currency_repository.dart';
 import 'package:currency_converter/app/models/currency_model.dart';
 
 class HomeController{
 
-  late List<CurrencyModel> currencies;
+  List<CurrencyModel> currencies = [];
   late CurrencyModel fromCurrency;
   late CurrencyModel toCurrency;
+  late CurrencyRepository repo;
 
   final TextEditingController fromText;
   final TextEditingController toText;
 
-  HomeController({required this.fromText, required this.toText}) {
-    List<Map<String, dynamic>> data = [
-      {
-        "name": "EUR",
-        "rates": [
-          {"name": "dollar",
-          "value": 1.159373},
-          {"name": "real",
-          "value": 6.349658},
-          {"name": "pound",
-          "value": 0.851194}
-        ]
-      },
-      {
-        "name": "USD",
-        "rates": [
-          {"name": "euro",
-          "value": 0.862535180653681},
-          {"name": "real",
-          "value": 5.47680341011909},
-          {"name": "pound",
-          "value": 0.7341847705613292}
-        ]
-      },
-      {
-        "name": "BRL",
-        "rates": [
-          {"name": "euro",
-          "value": 0.15748879703442295},
-          {"name": "dollar",
-          "value": 0.18258825908419005},
-          {"name": "pound",
-          "value": 0.13405351910291863}
-        ]
-      },
-      {
-        "name": "GBP",
-        "rates": [
-          {"name": "euro",
-          "value": 1.1748203112333968},
-          {"name": "real",
-          "value": 7.459707187785628},
-          {"name": "dollar",
-          "value": 1.362054948695597},
-        ]
-      }
-    ];
+  final ValueNotifier<AppController> appInstance = ValueNotifier<AppController>(AppController.instance);
+  final ValueNotifier<HomeState> state = ValueNotifier<HomeState>(HomeState.start);
 
-    currencies = AppController.instance.loaded ? AppController.instance.currencies : data.map((value)=>CurrencyModel.fromMap(value)).toList();
-    fromCurrency = currencies[0];
-    toCurrency = currencies[1];
+  HomeController({required this.fromText, required this.toText, CurrencyRepository? repository}){
+    repo = repository ?? CurrencyRepository();
+    fromCurrency = CurrencyModel(name: '', rates: []);
+    toCurrency = CurrencyModel(name: '', rates: []);
   }
 
   convert(){
@@ -73,50 +33,49 @@ class HomeController{
     double result = value*exchange;
     toText.text = result.toStringAsFixed(2);
   }
-  
-  static Future<List<CurrencyModel>> update() async{
 
-    await AppController.instance.storage.ready;
+  Future start() async {
+    state.value = HomeState.loading;
 
-    const String getCurrencies = r'''
-      query {
-        currencies{
-          name
-          rates{
-            name
-            value
-          }
-        }
-      }''';
+    var data = json.decode(await rootBundle.loadString('assets/data/currencies.json'));
+    
+    await appInstance.value.storage.ready;
 
-    final QueryOptions options = QueryOptions(
-      document: gql(getCurrencies),
-    );
-
-    final GraphQLClient client = GraphQLClient(
-      cache: GraphQLCache(),
-      link: HttpLink("https://currencyc-api.herokuapp.com/graphql"),
-    );
-
-    final QueryResult result = await client.query(options);
-
-    List<CurrencyModel> curs = [];
-
-    if(!result.hasException){
-      final List<dynamic> data = result.data?['currencies'] as List<dynamic>;
-      
-      curs = data.map((value)=>CurrencyModel.fromMap(value)).toList();
-
-      await AppController.instance.storage.setItem("currencies", curs);
-      await AppController.instance.storage.setItem("cached", true);
-
-      return curs; 
-    }else{
-      var data = AppController.instance.storage.getItem("currencies");
-      if(data!=null){
-        data.forEach((value)=>curs.add(CurrencyModel.fromJson(value)));
-      }
-      return curs;
+    if(appInstance.value.storage.getItem('dark')!=null){
+      AppController.instance.darkTheme.value = appInstance.value.storage.getItem('dark');
     }
+    
+    appInstance.value.cached = appInstance.value.storage.getItem('cached')!=null
+                                                                          ?true
+                                                                          :false;
+
+    if(appInstance.value.cached){
+      appInstance.value.storage.getItem('currencies').forEach(
+        (value)=>currencies.add(
+          CurrencyModel.fromJson(value)
+        )
+      );
+    }else{
+      data['currencies'].forEach(
+        (value)=>currencies.add(
+          CurrencyModel.fromMap(value)
+        )
+      );
+    }
+    fromCurrency = currencies[0];
+    toCurrency = currencies[1];
+    state.value = HomeState.success;
   }
+
+  Future update() async {
+    state.value = HomeState.loading;
+    var c = await repo.update();
+    if(c.isNotEmpty) {
+      currencies = c;
+      fromCurrency = currencies[0];
+      toCurrency = currencies[2];
+    }
+    state.value = HomeState.success;
+  }
+
 }
