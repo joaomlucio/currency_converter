@@ -4,6 +4,7 @@ import 'package:currency_converter/app/controllers/home_controller.dart';
 import 'package:currency_converter/app/enums/homeState_enum.dart';
 import 'package:currency_converter/app/repositories/currency_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
 // ignore: must_be_immutable
 class HomeView extends StatefulWidget {
@@ -152,7 +153,10 @@ class _HomeViewState extends State<HomeView> {
             padding: EdgeInsets.only(right: 20.0),
             child: IconButton(
               onPressed: (){
-                homeController.appInstance.value.toggleDarkTheme();
+                setState(() {
+                  homeController.appInstance.value.darkTheme = !homeController.appInstance.value.darkTheme; 
+                  Hive.box('darkThemeBox').put('dark', homeController.appInstance.value.darkTheme);  
+                });
               },
               icon: Icon(
                 Icons.dark_mode_outlined,

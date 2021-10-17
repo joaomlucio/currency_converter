@@ -41,10 +41,6 @@ class HomeController{
     
     await appInstance.value.storage.ready;
 
-    if(appInstance.value.storage.getItem('dark')!=null){
-      AppController.instance.darkTheme.value = appInstance.value.storage.getItem('dark');
-    }
-    
     appInstance.value.cached = appInstance.value.storage.getItem('cached')!=null
                                                                           ?true
                                                                           :false;
